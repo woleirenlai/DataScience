@@ -1,0 +1,14 @@
+/*Q1每年都有多少不同的客户下订单，订单销售总额和平均销售额有什么变化？*/
+/*order_amt计算各订单的销售总金额*/
+WITH order_amt AS (SELECT od.OrderID ord_id, SUM(od.UnitPrice*od.Quantity*(1-od.Discount)) ord_amt
+FROM OrderDetails od
+GROUP BY ord_id),
+/*order_info查各个订单对应的客户、发生年份和订单销售总金额*/
+order_info AS (SELECT o.OrderId ord_id, o.CustomerID cstm_id, STRFTIME('%Y', o.OrderDate) ord_year, order_amt.ord_amt ord_amt
+FROM Orders o
+JOIN order_amt
+ON o.OrderId = order_amt.ord_id)
+/*查各年的客户数量、所有订单销售总金额和平均销售额*/
+SELECT order_info.ord_year ord_year, COUNT(DISTINCT order_info.cstm_id) cstm_count, SUM(order_info.ord_amt) sum_ord_amt, AVG(order_info.ord_amt) avg_amt
+FROM order_info
+GROUP BY ord_year

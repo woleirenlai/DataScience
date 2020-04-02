@@ -1,0 +1,22 @@
+/*Q2总销售额比所有客户平均消费高的前十位客户在哪些国家？*/
+/*order_amt计算各订单的销售总金额*/
+WITH order_amt AS (SELECT od.OrderID ord_id, SUM(od.UnitPrice*od.Quantity*(1-od.Discount)) ord_amt
+FROM OrderDetails od
+GROUP BY ord_id),
+/*order_info查各个订单对应的客户订单销售总金额*/
+order_info AS (SELECT o.OrderId ord_id, o.CustomerID cstm_id, order_amt.ord_amt ord_amt
+FROM Orders o
+JOIN order_amt
+ON o.OrderId = order_amt.ord_id)
+/*查比所有客户订单总金额均值高的客户对应的订单销售总金额和国家*/
+SELECT order_info.cstm_id cstm_id, SUM(order_info.ord_amt) sum_ord_amt, c.Country Country
+FROM order_info
+JOIN Customers c
+ON c.CustomerID = order_info.cstm_id
+GROUP BY cstm_id
+HAVING SUM(order_info.ord_amt) > (SELECT AVG(sum_ord_amt)
+FROM(SELECT order_info.cstm_id, SUM(order_info.ord_amt) sum_ord_amt
+FROM order_info
+GROUP BY cstm_id))
+ORDER BY sum_ord_amt DESC
+LIMIT 10

@@ -1,0 +1,68 @@
+/*order_amt查每个订单销售额*/
+WITH order_amt AS (SELECT od.OrderID ord_id, SUM(od.UnitPrice*od.Quantity*(1-od.Discount)) ord_amt
+FROM OrderDetails od
+GROUP BY ord_id),
+/*order_info查每个订单对应的客户年份和订单销售额*/
+order_info AS(SELECT o.OrderId ord_id, o.CustomerID cstm_id, STRFTIME('%Y', o.OrderDate) ord_year, order_amt.ord_amt ord_amt
+FROM Orders o
+JOIN order_amt
+ON o.OrderId = order_amt.ord_id),
+/*cstm_sum查各客户每年的订单销售总额*/
+cstm_sum AS (SELECT order_info.cstm_id cstm_id, order_info.ord_year ord_year, SUM(order_info.ord_amt) sum_ord_amt
+FROM order_info
+GROUP BY cstm_id, ord_year),
+/*top3_2014查2014年销售量前三的客户*/
+top3_2014 AS (SELECT *
+FROM cstm_sum
+WHERE cstm_sum.ord_year = '2014'
+ORDER BY cstm_sum.sum_ord_amt DESC
+LIMIT 3),
+/*top3_2015查2015年销售量前三的客户*/
+top3_2015 AS (SELECT *
+FROM cstm_sum
+WHERE cstm_sum.ord_year = '2015'
+ORDER BY cstm_sum.sum_ord_amt DESC
+LIMIT 3),
+/*top3_2016查2016年销售量前三的客户*/
+top3_2016 AS (SELECT *
+FROM cstm_sum
+WHERE cstm_sum.ord_year = '2016'
+ORDER BY cstm_sum.sum_ord_amt DESC
+LIMIT 3),
+/*prod_info所有订单对应客户、年份、类别名称和产品销售额*/
+prod_info AS (SELECT od.OrderID ord_id, order_info.cstm_id cstm_id, order_info.ord_year ord_year, od.ProductID prod_id,  c.CategoryName cate_name, SUM(od.UnitPrice*od.Quantity*(1-od.Discount)) prod_amt
+FROM OrderDetails od
+JOIN order_info
+ON order_info.ord_id = od.OrderID
+JOIN Products p
+ON p.ProductID = od.ProductID
+JOIN Categories c
+ON c.CategoryID = p.CategoryID
+GROUP BY ord_id, prod_id),
+/*top3_2014_prod查2014年前三的对应的订单和产品销售额*/
+top3_2014_prod AS (SELECT ord_year, cstm_id, cate_name, SUM(prod_amt) sum_prod_amt
+FROM prod_info
+GROUP BY ord_year, cstm_id, cate_name
+HAVING cstm_id IN (SELECT cstm_id FROM top3_2014) AND ord_year = '2014'
+ORDER BY ord_year),
+/*top3_2015_prod查2015年前三的对应的订单和产品销售额*/
+top3_2015_prod AS (SELECT ord_year, cstm_id, cate_name, SUM(prod_amt) sum_prod_amt
+FROM prod_info
+GROUP BY ord_year, cstm_id, cate_name
+HAVING cstm_id IN (SELECT cstm_id FROM top3_2015) AND ord_year = '2015'
+ORDER BY ord_year),
+/*top3_2016_prod查2016年前三的对应的订单和产品销售额*/
+top3_2016_prod AS (SELECT ord_year, cstm_id, cate_name, SUM(prod_amt) sum_prod_amt
+FROM prod_info
+GROUP BY ord_year, cstm_id, cate_name
+HAVING cstm_id IN (SELECT cstm_id FROM top3_2016) AND ord_year = '2016'
+ORDER BY ord_year)
+/*将每年的情况合入一张表*/
+SELECT *
+FROM top3_2014_prod
+UNION ALL
+SELECT *
+FROM top3_2015_prod
+UNION ALL
+SELECT *
+FROM top3_2016_prod
