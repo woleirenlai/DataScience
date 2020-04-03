@@ -1,0 +1,12 @@
+https://pandas.pydata.org/pandas-docs/stable/api.html#datetimelike-properties
+https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.Series.dt.weekday_name.html
+https://www.jb51.net/article/73333.htm
+https://stackoverflow.com/questions/50439633/when-ever-i-give-input-it-says-invalid-option
+http://www.runoob.com/python/python-while-loop.html
+https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Index.html
+https://blog.csdn.net/gangyin5071/article/details/79601386
+https://classroom.udacity.com/nanodegrees/nd002-cn-basic-vip/parts/0ad43cea-8e74-4486-911c-d1fae2f03c97/modules/134150b9-81b0-40d1-9c2c-bb288bb49d55/lessons/e5bef1dd-5031-45c3-aaf7-8536f6f3cf8a/concepts/b05491a6-fd04-4889-8736-df78744b3615
+https://classroom.udacity.com/nanodegrees/nd002-cn-basic-vip/parts/0ad43cea-8e74-4486-911c-d1fae2f03c97/modules/134150b9-81b0-40d1-9c2c-bb288bb49d55/lessons/e5bef1dd-5031-45c3-aaf7-8536f6f3cf8a/concepts/8c82c45c-a247-4fbe-a5f7-af8507bf150e
+http://www.runoob.com/python/att-dictionary-keys.html
+https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.size.html
+http://pandas.pydata.org/pandas-docs/version/0.17.0/generated/pandas.DataFrame.idxmax.html
