@@ -17,6 +17,8 @@ RAID（独立硬盘冗余阵列）技术   --   https://zh.wikipedia.org/wiki/RA
 
 常用的RADI有这几种：raid0 raid1 raid10 raid5 raid6 
 
+![Image05-1.png](https://github.com/woleirenlai/Images/blob/master/从0开始学大数据/Image05-1.png)
+
 假设服务器有N块磁盘
 
 RAID 0是数据从内存缓冲区写入磁盘时分成N分数据，同时并发写入N块磁盘，是的数据整体写入速度是一块磁盘的N倍，读取数据同理，因此RAID 0具有极快的读写速度，但是RAID 0不做数据备份，N块中有一块损坏，数据完整性就被破坏，其他磁盘的数据也无法使用。
@@ -34,6 +36,8 @@ RAID 5是RAID 3相似的方案，使用更多，校验数据不是写入第N块�
 如果数据需要很高的可靠性，在出现同时损坏来给你块磁盘的情况下，或者坏了一块磁盘迟迟没有更换，导致有坏了一块，扔需要修复，可以使用RAID 6，与RAID 5类似，但是数据只写入N - 2块磁盘，并螺旋式地在两块磁盘中写入校验信息（使用不同算法生成）。
 
 在相同磁盘数目N的情况下，各种RAID技术的比较：
+
+![Image05-2.png](https://github.com/woleirenlai/Images/blob/master/从0开始学大数据/Image05-2.png)
 
 RAID技术可以通过专用的RAID卡或者主板直接进行硬件实现，也可以在从操作系统层面将多块磁盘组成RAID，从逻辑上看做一个访问目录。
 
