@@ -2,7 +2,7 @@
 
 ## 1.json解析
 
-### 情景
+**情景**
 
 表中存储的优惠详情字段PROMOTION_DETAIL为：
 
@@ -60,3 +60,34 @@ item[0] 表示第一个json数组里的第一个数组，.desc 表示取desc 对
 对于存储多个json数组的数据：还是先拼接成一个大的json对象，变更item[0]中json数组的位置，item[1]取第二个json数组的内容，item[2]取json数组的内容。
 
 但是不能在select中用concat(str) ->> '$.item[0].key'直接取值，同时取其他字段的时候，嵌套子查询然后连接大表取数。
+
+**拓展链接**
+
+[Json教程](https://www.runoob.com/json/json-tutorial.html)
+
+[mysql解析json数组](https://www.sunjs.com/article/detail/4152f6fc6c1e426d9288d7197a3467f0.html)
+
+## 2.SQL优化
+
+优化查询：
+
+使用explain分析
+
+mysql联合索引 有多个索引时，最好使用两个一起关联，使用第二个索引一般不会走  
+查询差别不大时，mysql不会走索引，例如一张表10w条数据，从中取3w，不会走索引，相当于从10个男的里面找男的出来一样
+
+磁盘会根据数据量存储不同文件里，可以加一个子查询，走索引把关键数据查出来再关联sql会内部优化查询 根据数据量
+
+## 3.空值
+
+数据为空字符串 ‘“ 和 null 或者 [null]
+
+## 4.日期时间规范化
+
+DATE_FORMAT(date, '%Y/%m/%d')
+
+输出：2020/4/30
+
+TIME_FORMAT(time, '%H:%I:%s')
+
+输出：13:01:03
