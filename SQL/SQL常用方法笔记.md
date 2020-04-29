@@ -50,14 +50,30 @@ WHERE s.order_no = '1860062113252020042013010684'
 
 **思路**
 
-将PROMOTION_DETAIL里的json数组，拼接成{"item":[{"id":"1201202004070935","desc":"云闪付满100立减50（新户专享）","type":"CP01","spnsrId":"00010000","offstAmt":"5000"}]} 的json对象，里面item对应一个json数组，里面包含了一个json对象，将大的json对象命名为detail然后解析里面的对应值  
+将PROMOTION_DETAIL里的json数组，拼接成：
+
+{"item":
+[{"id":"1201202004070935","desc":"云闪付满100立减50（新户专享）","type":"CP01","spnsrId":"00010000","offstAmt":"5000"}]
+} 
+
+这个json对象，json对象里包括了一个json数组，里面item对应一个json数组，这个json数组里面包含了一个json对象，将大的json对象命名为detail然后解析里面的对应值  
 使用 detail ->> '$.item[0].desc' 解析 'desc' 对应的值，同理offstAmt解析后需要转换单位为元
 
 item[0] 表示第一个json数组里的第一个数组，.desc 表示取desc 对应的值
 
-使用这个思路可以解决一个json对象里多个json数组的情况
+使用这个思路可以解决一个json对象里多个json数组的情况，例如存储多个json数组的数据：
 
-对于存储多个json数组的数据：还是先拼接成一个大的json对象，变更item[0]中json数组的位置，item[1]取第二个json数组的内容，item[2]取json数组的内容。
+[{"amount":"0.01","merchantContribute":"0.00","name":"花呗红包","otherContribute":"0.01","type":"COUPON","voucherId":"20200326000730021156061KILKF"},{"amount":"10.00","merchantContribute":"0.00","name":"购物消费券","otherContribute":"10.00","type":"ALIPAY_CASH_VOUCHER","voucherId":"20200326000730021156061ON092"}]
+
+这是一个json数组，里面包含了2个json对象，还是先拼接成一个大的json对象：
+
+{"item":
+[{"amount":"0.01","merchantContribute":"0.00","name":"花呗红包","otherContribute":"0.01","type":"COUPON","voucherId":"20200326000730021156061KILKF"},{"amount":"10.00","merchantContribute":"0.00","name":"购物消费券","otherContribute":"10.00","type":"ALIPAY_CASH_VOUCHER","voucherId":"20200326000730021156061ON092"}]
+}
+
+key为 item，value包含两个json数组，变更item[0]中json数组的位置，item[1]取第二个json数组的内容，item[2]取json数组的内容。
+
+
 
 但是不能在select中用concat(str) ->> '$.item[0].key'直接取值，同时取其他字段的时候，嵌套子查询然后连接大表取数。
 
