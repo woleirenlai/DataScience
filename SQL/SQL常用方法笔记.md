@@ -107,3 +107,5 @@ DATE_FORMAT(date, '%Y/%m/%d')
 TIME_FORMAT(time, '%H:%I:%s')
 
 输出：13:01:03
+
+## 5.Order by与 union
