@@ -10,11 +10,17 @@
 * 在加载数据函数load_data()中，城市读取为CITY_DATA中key对应的value，构建一个dataframe存储，转换时间列为datetime格式，通过df['datetime_column'].dt.month与dt.day_name()方法生成月份以及周几两列，判断输入的month不为all时，处理month实际为months列表索引+1，同时根据已选择的month对dataframe筛选月份，判断输入的day，不为all时，根据已选择的day对dataframe筛选周几。
 * 在时间统计函数time_stats()中，使用df.column.mode[0]取众数判断最常见的月份、周几、起始时间，在起始时间的处理使用df.datetime_column.dt.hour获取时间，所有的输出打印使用str.format()进行规范。
 * 在站点统计函数station_stats()中，使用df.column.mode[0]取众数判断最常见起始站点和结束站点以及频率最高的起始-结束旅途，在判断最高频率时将原始dataframe按照起始站和结束站分组后使用size()方法和idxmax()方法获取最大索引，所有的输出打印使用str.format()进行规范。
-* 在
+* 在用车时间统计函数trip_duration_stats()中，对用车时间列使用.sum()、.mean()、.max()、.min()求总计用时、平均用时、最长用时、最短用时，所有的输出打印使用str.format()进行规范。
+* 在用户统计函数user_stats()中，观察数据集已知washington数据集缺少Gender和Birth Year列，使用if-else判断需要进行统计的列名在数据集中，则继续，不在则输出错误，用户统计对用户类型、性别使用.value_counts()方法进行计数，对出生年份使用.min()、.max()、.mode()[0]求最小值、最大值和众数，所有的输出打印使用str.format()进行规范。
+* 主函数main()对整体所有输入进行控制，输出输入的分析结果，使用while和break控制是否重新开始。
 
 
 
+以下为官方项目概述
 
+---
+
+---
 
 ## 概述
 
