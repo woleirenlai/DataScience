@@ -2,7 +2,7 @@
 
 ## 我做了什么
 
-* 编写在Teiminal里可以运行的Python程序，通过在Teiminal交互输出共享单车数据的分析结果。
+* 编写在Terminal里可以运行的Python程序，通过在Terminal交互输出共享单车数据的分析结果。
 * 事先创建字典类型的CITY_DATA方便读取数据，事先定义月份初始变量以及周初始变量。
 * 在获取输入的函数get_filters()中创建控制输入的函数input_mod()，输入输入项、错误值、初始值、对应值，在每次获取city、month、day的输入时调用，输出输入的对应数据，以减少重复代码。
 * 控制输入的函数input_mod()使用while控制循环，使用if-else判断如果输入的获取的值不在初始的数据中则返回错误值，使用str.format()方法和str.title()方法规范输入和强调。
