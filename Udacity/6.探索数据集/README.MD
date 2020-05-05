@@ -3,18 +3,71 @@
 ## 我做了什么
 
 * 选择TMDb数据集，在JupyterNotebook中进行数据整理、探索性数据分析，生成可视化图表得出结论，形成完整数据分析报告。
+
 * 开始导入pandas、numpy、matplotlib.pyplot包，使用`plt.rcParams['font.sans-serif'] = ['SimHei']`设置字体。
+
 * 数据整理部分对数据理解和评估提出需要进行探索的问题，之后进行数据清理：
+
   * 列处理：使用`.drop([columnname], axis = 1)`方法删除与数据分析无关的列。
   * 冗余数据：使用`sum(dataframe.duplicated())`方法查看冗余数据，使用`dataframe.drop_duplicates(inplace = True)`方法删除冗余数据。
   * 空值处理：观察空值的数据量后，使用`dataframe.dropna(axis = 0, inplace = True)`方法删除空值。
+
 * 探索性数据分析部分，根据提出的两个问题分别进行探索
+
   * 问题1分析电影类别
-    * 处理电影类别`genres`列，原始数据由“|”将多个类别合并为一列，创建一个`set`类型数据集存储`genres`列中出现的所有类别，使用`for`循环读取`genres`列使用`str.split('|')`方法分割的`genre`，使用`set().union()`方法取每次读取的`genre`之间的并集`all_genres`，将`all_genres`存储为`list`类型。
+
+    * 处理电影类别`genres`列，原始数据由“|”将多个类别合并为一列，创建一个`set`类型数据集存储`genres`列中出现的所有类别，使用`for`循环读取`genres`列使用`str.split('|')`方法分割的`genre`，使用`set().union()`方法取每次读取的`genre`之间的并集`all_genres`，并将`all_genres`存储为`list`类型。
+
+    * ```python
+      #创建一个set()，使用for循环，使用union(联合)取并集set(a).union(b)
+      all_genres = set()
+      for genre in df2['genres'].str.split('|'):
+          all_genres = set().union(genre, all_genres)
+      #将all_genres转换为列表
+      all_genres = list(all_genres)
+      ```
+
     * 使用`for`循环获取每个电影类别，对于在已处理的所有电影类别`all_genres`列表中的`genre`，原数据`genres`列包含此类别则该类别列记为1否则为0，处理完后删除`genres`列。
+
+    * ```python
+      #使用for循环，获取每个电影的类型，该电影包含哪个类型，就返回1，否则返回0
+      for genre in all_genres:
+          df2[genre] = df2['genres'].str.contains(genre).apply(lambda x: 1 if x else 0)
+      ```
+
     * 各类别的总数：使用`dateframe.loc[:, all_genres].sum().sort_values(ascending = True)`方法获取各个电影类别总数的降序排列，使用`.plot.barh(label = 'all_genres')`绘制横向条形图查看各个电影类别的数量。
+
     * 各类别的占比：使用每个电影类别/总数求占比，使用`.plot.pie()`方法绘制饼图查看占比，设置参数`explode = (proportion > 0.06)`为占比>0.06时突出显示。
-    * 
+
+    * 各类别的欢迎程度：以`all_genresd`为索引创建一个新的`dateframe`存储各个类别的受欢迎程度`popularity`的均值，绘制横向条形图查看各类别情况。
+
+      * 对于每个类别的`popularity`，建立一个列表`list`，储存该类别对应两种情况0,1的`popularity`的均值，使用`for`循环遍历所有类别，使用`list.append()`方法在列表末尾添加对应值0,1的`popularity`均值（按`genre`分组后对`popularity`求均值），之后使用`for`循环遍历这个包含每个类别`popularity`均值的`list`，将每个类别值为1的均值存储为新的list后添加至这个新的`dateframe`中。
+
+      * ```python
+        #创建新的DataFrame，以各个电影类别作为索引，列数据为该类型popularity均值
+        df_genres_pop = pd.DataFrame(index = all_genres)
+        #求每种类别的平均受欢迎程度
+        #建立一个列表list，储存该类别对应两种情况0,1的popularity的均值
+        #使用for循环遍历所有类别，使用list.append()方法在列表末尾添加对应值0,1的popularity均值
+        list = []
+        for genre in all_genres:
+            list.append(df_genres.groupby(genre)['popularity'].mean())
+        #创建一个列表，使用range(len(list1))遍历list，取list中每个类别值为1的popularity均值
+        list2=[]
+        for i in range(len(all_genres)):
+            list2.append(list[i][1])
+        df_genres_pop['popularity_mean'] = list2
+        ```
+
+  * 问题2分析票房高的电影特点
+
+    * 选取收入大于平均收入的数据作为高票房数据，对这些数据使用`.describe()`方法进行描述统计。
+    * 使用`dateframe.hist()`方法绘制高票房数据集的popularity，runtime，vote_average，budget_adj，revenue_adj列直方图查看其分布。
+    * 使用`plt.scatter()`方法绘制popularity，runtime，vote_average，budget_adj与revenue_adj的散点图，查看他们之间的相关关系。
+
+* 根据探索性分析的结果得出两个问题的结论，并对整个分析进行总结。
+
+
 
 
 
