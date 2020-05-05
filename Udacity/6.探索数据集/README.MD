@@ -1,3 +1,29 @@
+# 关于项目6：探索数据集
+
+## 我做了什么
+
+* 选择TMDb数据集，在JupyterNotebook中进行数据整理、探索性数据分析，生成可视化图表得出结论，形成完整数据分析报告。
+* 开始导入pandas、numpy、matplotlib.pyplot包，使用`plt.rcParams['font.sans-serif'] = ['SimHei']`设置字体。
+* 数据整理部分对数据理解和评估提出需要进行探索的问题，之后进行数据清理：
+  * 列处理：使用`.drop([columnname], axis = 1)`方法删除与数据分析无关的列。
+  * 冗余数据：使用`sum(dataframe.duplicated())`方法查看冗余数据，使用`dataframe.drop_duplicates(inplace = True)`方法删除冗余数据。
+  * 空值处理：观察空值的数据量后，使用`dataframe.dropna(axis = 0, inplace = True)`方法删除空值。
+* 探索性数据分析部分，根据提出的两个问题分别进行探索
+  * 问题1分析电影类别
+    * 处理电影类别`genres`列，原始数据由“|”将多个类别合并为一列，创建一个`set`类型数据集存储`genres`列中出现的所有类别，使用`for`循环读取`genres`列使用`str.split('|')`方法分割的`genre`，使用`set().union()`方法取每次读取的`genre`之间的并集`all_genres`，将`all_genres`存储为`list`类型。
+    * 使用`for`循环获取每个电影类别，对于在已处理的所有电影类别`all_genres`列表中的`genre`，原数据`genres`列包含此类别则该类别列记为1否则为0，处理完后删除`genres`列。
+    * 各类别的总数：使用`dateframe.loc[:, all_genres].sum().sort_values(ascending = True)`方法获取各个电影类别总数的降序排列，使用`.plot.barh(label = 'all_genres')`绘制横向条形图查看各个电影类别的数量。
+    * 各类别的占比：使用每个电影类别/总数求占比，使用`.plot.pie()`方法绘制饼图查看占比，设置参数`explode = (proportion > 0.06)`为占比>0.06时突出显示。
+    * 
+
+
+
+以下为官方项目概述
+
+---
+
+---
+
 ## 项目概述
 
 在本项目中，你将分析一个数据集，然后传达你的发现。你将使用 Python 库 NumPy、Pandas 和 Matplotlib 来使你的分析工作更加轻松。
