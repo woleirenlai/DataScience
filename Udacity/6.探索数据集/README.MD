@@ -18,7 +18,7 @@
 
     * 处理电影类别`genres`列，原始数据由“|”将多个类别合并为一列，创建一个`set`类型数据集存储`genres`列中出现的所有类别，使用`for`循环读取`genres`列使用`str.split('|')`方法分割的`genre`，使用`set().union()`方法取每次读取的`genre`之间的并集`all_genres`，并将`all_genres`存储为`list`类型。
 
-    * ```python
+      ```python
       #创建一个set()，使用for循环，使用union(联合)取并集set(a).union(b)
       all_genres = set()
       for genre in df2['genres'].str.split('|'):
@@ -29,7 +29,7 @@
 
     * 使用`for`循环获取每个电影类别，对于在已处理的所有电影类别`all_genres`列表中的`genre`，原数据`genres`列包含此类别则该类别列记为1否则为0，处理完后删除`genres`列。
 
-    * ```python
+      ```python
       #使用for循环，获取每个电影的类型，该电影包含哪个类型，就返回1，否则返回0
       for genre in all_genres:
           df2[genre] = df2['genres'].str.contains(genre).apply(lambda x: 1 if x else 0)
@@ -43,7 +43,7 @@
 
       * 对于每个类别的`popularity`，建立一个列表`list`，储存该类别对应两种情况0,1的`popularity`的均值，使用`for`循环遍历所有类别，使用`list.append()`方法在列表末尾添加对应值0,1的`popularity`均值（按`genre`分组后对`popularity`求均值），之后使用`for`循环遍历这个包含每个类别`popularity`均值的`list`，将每个类别值为1的均值存储为新的list后添加至这个新的`dateframe`中。
 
-      * ```python
+        ```python
         #创建新的DataFrame，以各个电影类别作为索引，列数据为该类型popularity均值
         df_genres_pop = pd.DataFrame(index = all_genres)
         #求每种类别的平均受欢迎程度
@@ -58,6 +58,7 @@
             list2.append(list[i][1])
         df_genres_pop['popularity_mean'] = list2
         ```
+      
 
   * 问题2分析票房高的电影特点
 
