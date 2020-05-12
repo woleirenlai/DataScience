@@ -8,11 +8,14 @@
   * 实验组`treatment`应对应`new_page`，在求其不一致次数时分别将对应数据提取转换成布尔值，再对布尔值求和；  
   * 使用不一致的布尔值作为索引，使用`df[~mismatch].copy()`创建符合要求的数据集，使用`~`排除不一致数据；  
   * 使用`df2[df2.duplicated(['user_id'], keep = False)]`查看冗余数据，使用索引定位删除冗余`df2.drop([2893], axis = 0, inplace = True)`
-
 * 对实验结果进行假设检验，确定零假设和备择假设，使用抽样模拟进行统计学检验。
-  * 在零假设条件下，使用`np.random.choice([0,1], size = n_new, p = [1- p_new, p_new])`方法对p_new概率下抽n_new个0、1值，同理取p_old概率下抽n_old个0、1值，求抽样结果下新旧页面转化率之差，这个过程模拟假设检验求1次p值的过程。
-  * 使用上述方法模拟10000个新旧页面转化率之差，编写一个`for`循环完成整个过程，将10000个新旧页面转化率之差存储在一个list中，绘制这个list的直方图，大致呈正态分布，同时零假设下的抽样新旧页面转化之差在图中。
-  * 计算
+  * 在零假设条件下，使用`np.random.choice([0,1], size = n_new, p = [1- p_new, p_new])`方法对p_new概率下抽n_new个0、1值，同理取p_old概率下抽n_old个0、1值，求抽样结果下新旧页面转化率之差，使用这个方法模拟10000次抽取后计算新旧页面转化率之差，编写一个`for`循环完成整个过程，将10000个新旧页面转化率之差存储在一个list中，绘制这个list的直方图，大致呈正态分布，同时零假设下的抽样新旧页面转化之差在图中。
+  * 计算原始数据新旧页面转化率之差后求抽样结果的新旧页面转化率之差大于原始数据新旧页面转化率之差的比例，这个比例就是统计检验的p值。
+  * P值是零假设为真的条件下，观察到统计量的概率，如果P值越大，说明观察到统计量的概率越大，也就没有足够证据拒绝零假设。
+  * 使用`statsmodels.api`内置函数`stats.proportions_ztest`计算统计量和p值，方法为`sm.stats.proportions_ztest([convert_new, convert_old], [n_new, n_old], alternative='larger')`，`convert_new`、`convert_old`为新旧页面转化次数，`n_new`、`n_old`为新旧页面访问次数，输出`z_score`和`p_value`。
+  * 使用`scipy.stats`中`norm`的`norm.ppf(1-(0.05))`计算95%置信水平下，单尾Z score的临界值，使用`norm.cdf(z_score)`计算`z score`的显著性，得出结论。
+* 使用逻辑回归获得A/B测试的结果。
+  * 
 
 
 
