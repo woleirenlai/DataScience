@@ -18,12 +18,30 @@
   * 三个数据集都有相同的`tweet_id`字段，使用`df1.merge(df2, how = 'inner', on = 'tweet_id').merge(df3, how = 'inner', on = 'tweet_id')`方法进行合并，使用`df.column.astype('str')`并将`tweet_id`字段数据格式转为字符串类型。
   * 数据质量问题：
     * 与项目分析关系不大且缺失值过多的列直接删除，根据项目要求筛选保留`retweeted_status_id`为空的数据，筛选后再次删除与项目分析无关的数据列，并且之前有缺失值的列也无缺失值。
+    
     * 对时间列数据进行数据格式转换，原时间数据中的 "+0000"实际为时区信息，在转换时需要设置参数，方法为`pd.to_datetime(df_clean.timestamp, utc=True)`
+    
     * `source`列表示数据来源，但是保存的数据为网址数据，来源信息存储在网址文本之中，需要使用正则表达式提取，方法为`df_clean.source.str.extract('>(.+)<', expand = True)`
+    
     * 评分数据重新提取，先处理分母，再处理分子，处理后创建评分列
-      * 处理分母不为10的情况，查找对应的数据，在异常数据量少的情况下用index定位数据后修改，方法为`df_clean.loc[876, 'rating_numerator'] = 14`
+    
+      * 处理分母不为10的情况，查找对应的数据，在异常数据量少的情况下用index定位数据后修改分子分母数据，方法为`df_clean.loc[876, 'rating_numerator'] = 14`
       * 发现`text`列中存在‘& amp;’这种html转义字符(markdown语法中会将这个转义字符省略，因此加了一个空格方便显示)，表达‘&’，需要替换为‘&’，方法为`df_clean.text.str.replace('&amp;', '&')`
-      * 处理分子的异常数据，
+      * 处理分子的异常数据，先使用`value_counts()`查看整体分子都有哪些数据，对于分子大于20的数据，查看对应的`text`列数据，先对分子列进行格式转换后使用index定位修改。
+    
+    * `name`列数据使用`value_counts()`查看数据情况发现不只是有a, an, the, None的现象，just, my, one, very等小写字母的数据，这些显然不符合这列的含义，需要重新提取。
+    
+      * 将`name`列为小写或者为字符串 'None'的数据集表示错误的`name`，方法为
+    
+        `no_name_mask = (df_clean.name.str.islower()) | (df_clean.name == 'None')`，使用`~no_name_mask`筛选出正确提取了`name` 的 `text `，观察这些数据的规律。
+    
+      * 这些些正常提取name的数据，会跟随这些信号词：This is, name is, named, Here we have, Here is, Meet, Say hello to 等，使用正则表达式从`text`列重新提取，并限定提取的 pattern 是首字母大写，方法为
+    
+        `df_clean.text.str.extract('(?:This is|name is|named|Here we have|Here is|Meet|Say hello to)\s([A-Z][a-zA-Z+]*)', expand = True)`
+    
+      * 将`name`列的空字符串`''`、字符串`None`、`NaN`替换为`np.nan`。
+    
+    * 表示狗成长阶段的`doggo`、`floofer`、`pupper`、`puppo`存在空值，还有一条数据对应多个阶段的情况，需要处理
 * 提问和分析
 
 
