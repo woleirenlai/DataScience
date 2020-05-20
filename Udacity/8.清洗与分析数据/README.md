@@ -6,7 +6,7 @@
 * 数据收集，保存
 
   * 对于推特图像的预测数据，使用Requests 库读取提供的URL，使用`with open(url) as file`，`file.write(requests.get(url))`方法保存数据。
-* 对于每条推特的特外数据，无法访问Twitter，直接使用项目提供的数据集，使用`pd.read_json()`方法读取json数据，查看数据集后选取必要数据重新保存为新的DateFrame。
+  * 对于每条推特的特外数据，无法访问Twitter，直接使用项目提供的数据集，使用`pd.read_json()`方法读取json数据，查看数据集后选取必要数据重新保存为新的DateFrame。
 * 数据评估，整理数据质量和整洁度问题
   * 对WeRateDogs推特档案数据进行数据理解，查看数据集情况，判断列数据格式准确性，使用`dataframe.column.duplicated().sum()`查看单列的冗余，使用`dataframe.column.value_counts()`根据字段含义判断评分数据的有效性（十分制下分子超过10、分子大于分母且分子大于100，分母超过10等）、判断名称列的有效性（为`None`，`a`的数据）、其他列应为空却记为`None`的数据，取狗的成长阶段数据，将存储为`None`的数据替换为空值`np.nan`，使用`df.isnull().sum(axis = 1).value_counts()`查看空值沿每行的统计情况，几列数据为空则统计为几。
   * 对另外两个数据集上述相同过程进行数据理解、列数据格式准确性、冗余情况、数据缺失情况、根据字段含义查看各列数据的有效情况。
@@ -41,7 +41,16 @@
     
       * 将`name`列的空字符串`''`、字符串`None`、`NaN`替换为`np.nan`。
     
-    * 表示狗成长阶段的`doggo`、`floofer`、`pupper`、`puppo`存在空值，还有一条数据对应多个阶段的情况，需要处理
+    * 表示狗成长阶段的`doggo`、`floofer`、`pupper`、`puppo`存在空值，还有一条数据对应多个阶段
+    
+      * 将text文本小写表示，使用字符串方法中的findall和正则表达式从text列中查找狗的成长阶段数据，方法：
+        `df_clean['stage'] = df_clean.text.str.lower().str.findall('(doggo|floofer|pupper|puppo)')`
+    
+      * 使用findall查找返回的是一个list类型数据，其中包含了有多个阶段的数据以及大量空缺值，使用set方法去重，使用join方法将处于多个状态的数据连接，方法：
+    
+        `df_clean.stage = df_clean.stage.apply(lambda x: ','.join(set(x)))`
+    
+        
 * 提问和分析
 
 
