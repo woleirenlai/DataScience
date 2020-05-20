@@ -59,9 +59,29 @@
   
 * 提问和分析
 
-  * 根据处理完成的数据，
+  * 根据处理完成的数据，提出三个问题，根据问题进行数据可视化得出结论。
 
+  * 对点赞数量和转发数量绘制散点图，可以发现二者有明显正相关关系。
 
+  * 不同成长阶段的评分，取成长阶段数据非空的评分数据：
+
+    `df_stg_rat = df[['stage', 'rating']][df.stage.notnull()]`
+
+    成长阶段数据里包含了一条多个阶段并存的数据，进行拆分然后形成多行数据：
+
+    `split = df_stg_rat['stage'].str.split(',', expand=True).stack()`
+
+    重置索引后重命名列：
+
+    `split_reset = split.reset_index(level=1,drop=True).rename('stage')`
+
+    按照索引将拆分的数据join到原数据：
+
+    `df_stg_rat = df_stg_rat.drop('stage', axis=1).join(split_reset)`
+
+    按照成长阶段分组求评分均值后绘制条形图即可。
+
+    
 
 
 
