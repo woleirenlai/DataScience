@@ -3,18 +3,108 @@
 ## 我做了什么
 
 * 编写在Terminal里可以运行的Python程序，通过在Terminal交互输出共享单车数据的分析结果。
+
 * 事先创建字典类型的`CITY_DATA`方便读取数据，事先定义月份初始变量以及周初始变量。
+
 * 在获取输入的函数`get_filters()`中创建控制输入的函数`input_mod()`，输入输入项、错误值、初始值、对应值，在每次获取`city`、`month`、`day`的输入时调用，输出输入的对应数据，以减少重复代码。
+
 * 控制输入的函数`input_mod()`使用`while`控制循环，使用`if-else`判断如果输入的获取的值不在初始的数据中则返回错误值，使用`str.format()`方法和`str.title()`方法规范输入和强调。
+
+  ```python
+  #创建一个用于控制输入的函数
+  def input_mod(input_print, error_print, enterable_list, get_value):
+      while True:
+          ret = input(input_print)
+          ret = get_value(ret) #这里执行作为参数的函数
+          if ret in enterable_list:
+              print('You have selected {}.'.format(ret.title()))
+              return ret
+          else:
+              print(error_print)
+  ```
+
+
 * 获取`city`、`month`、`day`调用`input_mod()`，在对应已选择数据使用`lambda x: str.lower(x)`规范输出的数据格式。
+
 * 在加载数据函数`load_data()`中，城市读取为`CITY_DATA`中key对应的value，构建一个dataframe存储，转换时间列为datetime格式，通过`df['datetime_column'].dt.month`与`dt.day_name()`方法生成月份以及周几两列，判断输入的`month`不为all时，处理`month`实际为`months`列表索引+1，同时根据已选择的`month`对dataframe筛选月份，判断输入的`day`，不为all时，根据已选择的`day`对dataframe筛选周几。
+
+  ```python
+  def load_data(city, month, day):
+  
+      df = pd.read_csv(CITY_DATA[city])
+  
+      # convert the Start Time column to datetime
+      df['Start Time'] = pd.to_datetime(df['Start Time'])
+  
+      # add two new columns: month column and day of week column from Start Time
+      df['month'] = df['Start Time'].dt.month
+      df['day_of_week'] = df['Start Time'].dt.day_name()
+  
+      # filter by month if applicable
+      if month != 'all':
+          months = ['january', 'february', 'march', 'april', 'may', 'june']
+          month = months.index(month) + 1
+      # filter by month to create the new dataframe
+          df = df[df['month'] == month]
+  
+      # filter by day of week if applicable
+      if day != 'all':
+      # filter by day of week to create the new dataframe
+          df = df[df['day_of_week'] == day.title()]
+  
+      return df
+  ```
+
 * 在时间统计函数`time_stats()`中，使用`df.column.mode[0]`取众数判断最常见的月份、周几、起始时间，在起始时间的处理使用`df.datetime_column.dt.hour`获取时间，所有的输出打印使用`str.format()`进行规范。
+
 * 在站点统计函数`station_stats()`中，使用`df.column.mode[0]`取众数判断最常见起始站点和结束站点以及频率最高的起始-结束旅途，在判断最高频率时将原始dataframe按照起始站和结束站分组后使用`size()`方法和`idxmax()`方法获取最大索引，所有的输出打印使用`str.format()`进行规范。
+
+  ```python
+  def station_stats(df):
+      """Displays statistics on the most popular stations and trip."""
+  
+      print('\nCalculating The Most Popular Stations and Trip...\n')
+      start_time = time.time()
+      # display most commonly used start station
+      most_commonly_used_start_station = df['Start Station'].mode()[0]
+      print('The most commonly used start station is : {}.'.format(most_commonly_used_start_station))
+  
+      # display most commonly used end station
+      most_commonly_used_end_station = df['End Station'].mode()[0]
+      print('The most commonly used end station is : {}.'.format(most_commonly_used_end_station))
+  
+      # display most frequent combination of start station and end station trip
+      #Modified as reviewed
+  
+      top = df.groupby(['Start Station', 'End Station']).size().idxmax()
+      print('The most frequent combination of start station and end station trip is:\n' \
+            '{} to {}'.format(top[0], top[1]))
+  
+      print("\nThis took %s seconds." % (time.time() - start_time))
+      print('-'*40)
+  ```
+
 * 在用车时间统计函数`trip_duration_stats()`中，对用车时间列使用`.sum()`、`.mean()`、`.max()`、`.min()`求总计用时、平均用时、最长用时、最短用时，所有的输出打印使用`str.format()`进行规范。
+
 * 在用户统计函数`user_stats()`中，观察数据集已知`washington`数据集缺少`Gender`和`Birth Year`列，使用`if-else`判断需要进行统计的列名在数据集中，则继续，不在则输出错误，用户统计对用户类型、性别使用`.value_counts()`方法进行计数，对出生年份使用`.min()`、`.max()`、`.mode()[0]`求最小值、最大值和众数，所有的输出打印使用`str.format()`进行规范。
+
 * 主函数`main()`对整体所有输入进行控制，输出输入的分析结果，使用`while`和`break`控制是否重新开始。
 
-
+  ```python
+  def main():
+      while True:
+          city, month, day = get_filters()
+          df = load_data(city, month, day)
+  
+          time_stats(df)
+          station_stats(df)
+          trip_duration_stats(df)
+          user_stats(df)
+  
+          restart = input('\nWould you like to restart? Enter yes or no.\n')
+          if restart.lower() != 'yes':
+              break
+  ```
 
 以下为官方项目概述
 
