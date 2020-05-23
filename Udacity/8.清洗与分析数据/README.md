@@ -6,7 +6,18 @@
 
 * 数据收集，保存
 
-  * 对于推特图像的预测数据，使用Requests 库读取提供的URL，使用`with open(url) as file`，`file.write(requests.get(url))`方法保存数据。
+  * 对于推特图像的预测数据，使用Requests 库读取提供的URL，之后保存数据。
+  
+    ```python
+    import os
+    import requests
+    url = 'https://raw.githubusercontent.com/udacity/new-dand-advanced-china/master/%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97/WeRateDogs%E9%A1%B9%E7%9B%AE/image-predictions.tsv'
+    response = requests.get(url)
+    #写入文件
+    with open( url.split('/')[-1], mode = 'wb') as file:
+        file.write(response.content)
+    ```
+  
   * 对于每条推特的特外数据，无法访问Twitter，直接使用项目提供的数据集，使用`pd.read_json()`方法读取json数据，查看数据集后选取必要数据重新保存为新的DateFrame。
   
 * 数据评估，整理数据质量和整洁度问题
@@ -18,18 +29,43 @@
   
 * 数据清洗，根据数据评估出现的问题进行处理
   * 对需要处理的每个数据集备份后，根据数据评估的每个数据集的数据质量和数据整洁度问题，结合项目分析方向，进行处理。
-  * 三个数据集都有相同的`tweet_id`字段，使用`df1.merge(df2, how = 'inner', on = 'tweet_id').merge(df3, how = 'inner', on = 'tweet_id')`方法进行合并，使用`df.column.astype('str')`并将`tweet_id`字段数据格式转为字符串类型。
+  
+  * 三个数据集都有相同的`tweet_id`字段，按照相同字段合并后进行数据格式转换。
+  
+    ```python
+    #合并数据集
+    df_clean = tae_clean.merge(ip_clean, how = 'inner', on = 'tweet_id').merge(td_clean, how = 'inner', on = 'tweet_id')
+    
+    #转换数据格式
+    df_clean.tweet_id = df_clean.tweet_id.astype('str')
+    ```
+  
   * 数据质量问题：
     * 与项目分析关系不大且缺失值过多的列直接删除，根据项目要求筛选保留`retweeted_status_id`为空的数据，筛选后再次删除与项目分析无关的数据列，并且之前有缺失值的列也无缺失值。
     
-    * 对时间列数据进行数据格式转换，原时间数据中的 "+0000"实际为时区信息，在转换时需要设置参数，方法为`pd.to_datetime(df_clean.timestamp, utc=True)`
+    * 对时间列数据进行数据格式转换，原时间数据中的 "+0000"实际为时区信息，在转换时需要设置参数
     
-    * `source`列表示数据来源，但是保存的数据为网址数据，来源信息存储在网址文本之中，需要使用正则表达式提取，方法为`df_clean.source.str.extract('>(.+)<', expand = True)`
+      ```python
+      #对timestamp列进行数据格式转换
+      df_clean.timestamp = pd.to_datetime(df_clean.timestamp, utc=True)
+      ```
+    
+    * `source`列表示数据来源，但是保存的数据为网址数据，来源信息存储在网址文本之中，需要使用正则表达式提取:
+    
+      ```python
+      df_clean.source.str.extract('>(.+)<', expand = True)
+      ```
     
     * 评分数据重新提取，先处理分母，再处理分子，处理后创建评分列
     
       * 处理分母不为10的情况，查找对应的数据，在异常数据量少的情况下用index定位数据后修改分子分母数据，方法为`df_clean.loc[876, 'rating_numerator'] = 14`
-      * 发现`text`列中存在‘& amp;’这种html转义字符(markdown语法中会将这个转义字符省略，因此加了一个空格方便显示)，表达‘&’，需要替换为‘&’，方法为`df_clean.text.str.replace('&amp;', '&')`
+    
+      * 发现`text`列中存在‘& amp;’这种html转义字符(markdown语法中会将这个转义字符省略，因此加了一个空格方便显示)，表达‘&’，需要替换为‘&’:
+    
+        ```python
+        df_clean.text.str.replace('&amp;', '&')
+        ```
+    
       * 处理分子的异常数据，先使用`value_counts()`查看整体分子都有哪些数据，对于分子大于20的数据，查看对应的`text`列数据，先对分子列进行格式转换后使用index定位修改。
     
     * `name`列数据使用`value_counts()`查看数据情况发现不只是有a, an, the, None的现象，just, my, one, very等小写字母的数据，这些显然不符合这列的含义，需要重新提取。
