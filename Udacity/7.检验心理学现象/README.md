@@ -3,11 +3,50 @@
 ## 我做了什么
 
 * 在JupyterNotebook中完成对心理学现象Stroop（斯特鲁普）实验数据集进行统计学检验的报告，Stroop实验参与者的任务是读出文字的打印颜色，数据集中记录了每个参与者读出显示的文字与打印颜色匹配与不匹配的用时。
+
 * 确定实验的因变量和自变量，确定假设集，假设集中的零假设和对立假设。
+
 * 确定假设检验的方法为配对样本T双尾检验，理由是数据集样本容量<30切只有样本数据，选用T检验，样本数据是同一对象的不同条件，选用配对样本T检验，对立假设中选择了总体均值差不为0，选择双尾检验。
+
 * 对样本数据集使用`.describe()`方法进行统计描述，观察数据的集中趋势和离散趋势。
+
 * 在一张图中绘制同一测试者在两种条件下的数据条形图，观察数据后创建时间差`diff`列绘制直方图查看分布。
+
+  ```python
+  import matplotlib.pyplot as plt
+  import seaborn as sns
+  %matplotlib inline
+  ind = df.index  
+  width = 0.35
+  
+  plt.figure(figsize = (12, 6))
+  p1 = plt.bar(ind - width/ 2, df.Congruent, width, facecolor = '#FFB11B') 
+  p2 = plt.bar(ind + width/ 2, df.Incongruent, width, facecolor = '#3A8FB7')
+  
+  plt.xlabel('Testers', fontsize = 12)
+  plt.ylabel('Times', fontsize = 12)
+  plt.title('Congruent and Incongruent test time used', fontsize = 12)
+  plt.xticks(ind)
+  plt.legend((p1[0], p2[0]), ('Congruent', 'Incongruent'));
+  ```
+
+  ```python
+  #创建差值列
+  df['diff'] = df.Incongruent - df.Congruent
+  #查看分布情况
+  sns.distplot(df['diff'])
+  plt.xlabel('diff', fontsize = 12)
+  plt.title('difference distplot', fontsize = 12);
+  ```
+
 * 导入scipy的stats库，使用`stats.ttest_rel()`方法计算两组数据的t检验下的t值和p值，查询t检验表进行统计学检验，得出结论。
+
+  ```python
+  #计算关键统计值
+  from scipy import stats
+  t, p_value = stats.ttest_rel(df.Congruent, df.Incongruent)
+  t, p_value
+  ```
 
 
 
