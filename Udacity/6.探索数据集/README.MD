@@ -4,13 +4,19 @@
 
 * 选择TMDb数据集，在JupyterNotebook中进行数据整理、探索性数据分析，生成可视化图表得出结论，形成完整数据分析报告。
 
-* 开始导入pandas、numpy、matplotlib.pyplot包，使用`plt.rcParams['font.sans-serif'] = ['SimHei']`设置字体。
+* 开始导入pandas、numpy、matplotlib.pyplot包，设置字体：
+
+  `plt.rcParams['font.sans-serif'] = ['SimHei']`。
 
 * 数据整理部分对数据理解和评估提出需要进行探索的问题，之后进行数据清理：
 
   * 列处理：使用`.drop([columnname], axis = 1)`方法删除与数据分析无关的列。
-  * 冗余数据：使用`sum(dataframe.duplicated())`方法查看冗余数据，使用`dataframe.drop_duplicates(inplace = True)`方法删除冗余数据。
-  * 空值处理：观察空值的数据量后，使用`dataframe.dropna(axis = 0, inplace = True)`方法删除空值。
+
+  * 冗余数据处理，查看冗余：`sum(dataframe.duplicated())`
+
+    删除冗余：`dataframe.drop_duplicates(inplace = True)`。
+
+  * 空值处理：观察空值的数据量后，删除空值：`dataframe.dropna(axis = 0, inplace = True)`。
 
 * 探索性数据分析部分，根据提出的两个问题分别进行探索
 
