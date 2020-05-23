@@ -58,7 +58,7 @@
     
     * 评分数据重新提取，先处理分母，再处理分子，处理后创建评分列
     
-      * 处理分母不为10的情况，查找对应的数据，在异常数据量少的情况下用index定位数据后修改分子分母数据，方法为`df_clean.loc[876, 'rating_numerator'] = 14`
+      * 处理分母不为10的情况，查找对应的数据，在异常数据量少的情况下用index定位数据后修改分子分母数据，方法为`df_clean.loc[876, 'rating_numerator'] = 14`。
     
       * 发现`text`列中存在‘& amp;’这种html转义字符(markdown语法中会将这个转义字符省略，因此加了一个空格方便显示)，表达‘&’，需要替换为‘&’:
     
@@ -70,24 +70,39 @@
     
     * `name`列数据使用`value_counts()`查看数据情况发现不只是有a, an, the, None的现象，just, my, one, very等小写字母的数据，这些显然不符合这列的含义，需要重新提取。
     
-      * 将`name`列为小写或者为字符串 'None'的数据集表示错误的`name`，方法为
+      * 将`name`列为小写或者为字符串 'None'的数据集表示错误的`name`，使用`~no_name_mask`筛选出正确提取了`name` 的 `text `，观察这些数据的规律。
     
-        `no_name_mask = (df_clean.name.str.islower()) | (df_clean.name == 'None')`，使用`~no_name_mask`筛选出正确提取了`name` 的 `text `，观察这些数据的规律。
+        ```python
+        # name 列为小写或者为字符串 'None'的数据集表示错误的name
+        no_name_mask = (df_clean.name.str.islower()) | (df_clean.name == 'None')
+        
+        # 使用 ~no_name_mask 筛选出正确提取 name 的 text 
+        df_clean.loc[~no_name_mask, ["name", "text"]].sample(10)
+        ```
     
-      * 这些些正常提取name的数据，会跟随这些信号词：This is, name is, named, Here we have, Here is, Meet, Say hello to 等，使用正则表达式从`text`列重新提取，并限定提取的 pattern 是首字母大写，方法为
+      * 这些些正常提取name的数据，会跟随这些信号词：This is, name is, named, Here we have, Here is, Meet, Say hello to 等，使用正则表达式从`text`列重新提取，并限定提取的 pattern 是首字母大写，将`name`列的空字符串`''`、字符串`None`、`NaN`替换为`np.nan`。
     
-        `df_clean.text.str.extract('(?:This is|name is|named|Here we have|Here is|Meet|Say hello to)\s([A-Z][a-zA-Z+]*)', expand = True)`
-    
-      * 将`name`列的空字符串`''`、字符串`None`、`NaN`替换为`np.nan`。
+        ```python
+        #重新提取name
+        df_clean.name = df_clean.text.str.extract('(?:This is|name is|named|Here we have|Here is|Meet|Say hello to)\s([A-Z][a-zA-Z+]*)', expand = True)
+        
+        #将空缺值替换为np.nan
+        df_clean.name = df_clean.name.replace('', np.nan)
+        df_clean.name = df_clean.name.replace('None', np.nan)
+        df_clean.name = df_clean.name.replace('NaN', np.nan)
+        ```
     
     * 表示狗成长阶段的`doggo`、`floofer`、`pupper`、`puppo`存在空值，还有一条数据对应多个阶段
     
-      * 将text文本小写表示，使用字符串方法中的findall和正则表达式从text列中查找狗的成长阶段数据：
-        `df_clean['stage'] = df_clean.text.str.lower().str.findall('(doggo|floofer|pupper|puppo)')`
-    
-      * 使用findall查找返回的是一个list类型数据，其中包含了有多个阶段的数据以及大量空缺值，使用set方法去重，使用join方法将处于多个阶段的数据连接：
-    
-        `df_clean.stage = df_clean.stage.apply(lambda x: ','.join(set(x)))`
+      * 将text文本小写表示，使用字符串方法中的findall和正则表达式从text列中查找狗的成长阶段数据，使用findall查找返回的是一个list类型数据，其中包含了有多个阶段的数据以及大量空缺值，使用set方法去重，使用join方法将处于多个阶段的数据连接：
+        
+    ```python
+        #从text列中获取狗的成长阶段
+      df_clean['stage'] = df_clean.text.str.lower().str.findall('(doggo|floofer|pupper|puppo)')
+        
+        #使用lambda方法将stage列中的每个值转为set后，使用‘，’连接重复的数据
+        df_clean.stage = df_clean.stage.apply(lambda x: ','.join(set(x)))
+        ```
         
         此时如果没有阶段数据，会记为空串`''`，使用`replace('', np.nan)`替换为空值，之后删除原数据中的四个阶段列。
     
@@ -99,27 +114,50 @@
 
   * 对点赞数量和转发数量绘制散点图，可以发现二者有明显正相关关系。
 
-  * 对于不同成长阶段的评分，取成长阶段数据非空的评分数据：
+  * 对于不同成长阶段的评分，需要对评分进行处理，取成长阶段数据非空的评分数据，按照成长阶段进行分组求均值：`df_stg_rat.groupby('stage').mean()`，发现成长阶段数据里包含了一条多个阶段并存的数据，进行拆分然后形成多行，之后重置索引后重命名列，然后按照索引将拆分的数据join到原数据。
 
-    `df_stg_rat = df[['stage', 'rating']][df.stage.notnull()]`
-
-    成长阶段数据里包含了一条多个阶段并存的数据，进行拆分然后形成多行数据：
-
-    `split = df_stg_rat['stage'].str.split(',', expand=True).stack()`
-
-    重置索引后重命名列：
-
-    `split_reset = split.reset_index(level=1,drop=True).rename('stage')`
-
-    按照索引将拆分的数据join到原数据：
-
-    `df_stg_rat = df_stg_rat.drop('stage', axis=1).join(split_reset)`
+    ```python
+  #选择成长阶段非空的数据
+    df_stg_rat = df[['stage', 'rating']][df.stage.notnull()]
+  
+    #拆分后打乱
+  split = df_stg_rat['stage'].str.split(',', expand=True).stack()
+    
+  #充值索引后重命名
+    split_reset = split.reset_index(level=1,drop=True).rename('stage')
+  
+    #重新聚合后分组
+  df_stg_rat = df_stg_rat.drop('stage', axis=1).join(split_reset)
+    df_stg_rat.groupby('stage').mean()
+  
+    ```
 
     按照成长阶段分组求评分均值后绘制条形图可查看不同阶段的评分情况。
-
-  * 对于不同狗品种的欢迎程度，取预测的数据和评分，构建一个函数处理品种，如果第一次预测是True就取第一次预测的结果，为False就按相同逻辑取第二次预测第三次预测的结果，对原数据进行函数处理后按照品种分组求喜爱人数`favorite_count`之和，绘制条形图，查看前十名：
   
-    `df_vrt_fvt.groupby('variety')['favorite_count'].sum().sort_values(ascending = False).head(10)`
+  * 对于不同狗品种的欢迎程度，取预测的数据和评分，构建一个函数处理品种，如果第一次预测是True就取第一次预测的结果，为False就按相同逻辑取第二次预测第三次预测的结果，对原数据进行函数处理后按照品种分组求喜爱人数`favorite_count`之和，绘制条形图，查看前十名
+  
+    ```python
+    df_vrt_fvt = df[['p1', 'p1_dog', 'p2', 'p2_dog', 'p3', 'p3_dog', 'favorite_count']]
+    
+    #提取狗的品种，如果第一次预测是True就取第一次预测的结果，为False就按相同逻辑取第二次预测第三次预测的结果
+    def get_breed(item):
+        if item['p1_dog'] == True:
+            item['variety'] = item['p1']
+        elif item['p2_dog'] == True:
+            item['variety'] = item['p2']
+        elif item['p3_dog'] == True:
+            item['variety'] = item['p3']
+        else:
+            item['variety'] = np.nan
+        return item
+    df_vrt_fvt = df_vrt_fvt.apply(get_breed, axis=1)
+    
+    #计算各品种的点赞数之和，取前十名，绘制条形图
+    df_vrt_fvt.groupby('variety')['favorite_count'].sum().sort_values(ascending = False).head(10).plot(kind = 'bar', figsize = (6, 6), alpha = 0.8)
+    
+    #查看前十名数据
+    df_vrt_fvt.groupby('variety')['favorite_count'].sum().sort_values(ascending = False).head(10)
+    ```
   
 * 进行总结，得出结论。
 
