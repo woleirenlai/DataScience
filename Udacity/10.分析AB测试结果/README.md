@@ -97,25 +97,59 @@
 * 使用逻辑回归获得A/B测试的结果。
   * 每行的值是是否转化，选用逻辑回归来对结果进行预测。
   
-  * 处理数据，为每个用户收到的页面创建虚拟变量列和截距列，使用`pd.get_dummies(df2['group'])`方法让每个用户在`treatment`组时`ab_page`列记为1，在`control`组时`control`列记为1，其余记为0。
+  * 处理数据，为每个用户收到的页面创建虚拟变量列和截距列，在`control`组时`control`列记为1，其余记为0。
   
-  * 使用`statsmodels.api`的`.Logit()`方法拟合该模型：
+    ```python
+    df2['intercept'] = 1
+    df2[['control', 'ab_page']] = pd.get_dummies(df2['group'])
+    ```
+  
+  * 使用`statsmodels.api`的`.Logit()`方法进行拟合：
   
     ```python
     log_mod = sm.Logit(df2['converted'], df2[['intercept', 'ab_page']])
     ```
   
-  * 对模型使用`log_mod.fit()`赋值后使用`.summary()`查看模型摘要。
+  * 查看模型摘要
     
-    * 模型摘要中，`ab_page`列的p值与上述自助抽样假设检验中的p值并不相同，原因是两个问题的零假设和备择假设不同，
+    ```python
+    results = log_mod.fit()
+    results.summary()
+    ```
+    
+    模型摘要中，`ab_page`列的p值与上述自助抽样假设检验中的p值并不相同，原因是两个问题的零假设和备择假设不同，
     
   * 在进行假设检验时，针对自助抽样的检验是旧页面的转化率是否大于或等于新页面，这是一个单尾检验(one-tail test)，P值越大，说明越无法拒绝零假设。回归模型中的假设检验的是拟合的自变量系数是否为零，这是一个双尾检验(two-tails test)，所得的P值越小，说明越没有足够证据支持零假设，即我们没有足够的证据拒绝备择假设自变量回归系数为0，回归结果具有统计显著性.
 * 添加其他变量，重新进行逻辑回归，观察结果。
   * 在添加其他影响用户是否转化的因素时，需要考虑添加其他因素可能会在一定程度上更好理解模型，在一定程度上避免辛普森悖论，但是添加附加项如果构建多元线性回归模型，首先要考虑附加项的与因变量是否为非线性关系，以及异常值和多重共线性的影响。
+  
   * 读取包含国家信息的文件，通过`user_id`关联到当前数据集，选定`CA`为baseline，使用`pd.get_dummies()`方法创建国家的虚拟变量，重新进行逻辑回归。
-    * 回归结果中国家变量的p值均>0.05，说明无统计显著性，没有足够的证据拒绝自变量系数的零假设：自变量系数为0.
+    
+    ```python
+    #构建虚拟变量，增加UK、US列
+    df3[['UK', 'US']] = pd.get_dummies(df3['country'])[['UK', 'US']]
+    #进行逻辑回归
+    log_mod2 = sm.Logit(df3['converted'], df3[['intercept', 'ab_page', 'UK', 'US']])
+    results2 = log_mod2.fit()
+    results2.summary()
+    ```
+    
+    回归结果中国家变量的p值均>0.05，说明无统计显著性，没有足够的证据拒绝自变量系数的零假设：自变量系数为0.
+    
   * 添加页面*国家的变量，选定`CA`为baseline，再次进行逻辑回归，观察回归结果。
-    * 回归结果中的拟合优度有了少量提升，但是新加入的自变量的p值仍>0.05，说明无统计显著性，无法拒绝自变量系数的零假设。
+    
+    ```python
+    #创建页面与国家的相互作用列
+    df3['page_US'] = df3['ab_page'] * df3['US']
+    df3['page_UK'] = df3['ab_page'] * df3['UK']
+    
+    #页面*国家的逻辑回归
+    log_mod3 = sm.Logit(df3['converted'], df3[['intercept', 'ab_page', 'UK', 'US', 'page_UK', 'page_US']])
+    results3 = log_mod3.fit()
+    results3.summary()
+    ```
+    
+    回归结果中的拟合优度有了少量提升，但是新加入的自变量的p值仍>0.05，说明无统计显著性，无法拒绝自变量系数的零假设。
 * 考虑实验时长对结果的影响，计算实验的花费时间，得出结论。
 
 
